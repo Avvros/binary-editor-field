@@ -1,0 +1,34 @@
+#data {
+    display: inline-block;
+    font-size: 0;
+}
+
+#data:focus {
+    outline: none;
+}
+
+span {
+    display: inline;
+    white-space: pre;
+    font-family: "Courier New", Consolas, "PT Mono", "Liberation Mono", monospace;
+    font-variant: normal;
+    font-size: 15px;
+    line-height: 19px;
+    color: darkgray;
+}
+
+span:hover {
+    background-color: aquamarine;
+}
+
+span:nth-child(16n)::after {
+    content: "\A";
+}
+
+span.active {
+    background-color: aqua;
+}
+
+span.filled {
+    color: inherit;
+}
