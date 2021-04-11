@@ -7,10 +7,11 @@ var activePoint;
 var points = dataField.childNodes;
 
 const LINE_WIDTH = 16;
+var LINE_COUNT = 13;
 
 function createDataField() {
-    for (i = 0; i < 13; i++) {
-        for (j = 0; j < 16; j++) {
+    for (i = 0; i < LINE_COUNT; i++) {
+        for (j = 0; j < LINE_WIDTH; j++) {
             let point = document.createElement("span");
             point.dataset.offset = i * LINE_WIDTH + j;
             //points.push(point);
@@ -30,6 +31,11 @@ function activatePoint(point) {
     if (activePoint != undefined) activePoint.classList.remove("active");
     activePoint = point;
     activePoint.classList.add("active");
+}
+
+function deactivateField() {
+    if (activePoint != undefined) activePoint.classList.remove("active");
+    activePoint = undefined;
 }
 
 /**
@@ -54,6 +60,25 @@ const arrows = {
     "ArrowDown" : LINE_WIDTH
 }
 
+function handleBackspace(offset) {
+    // Если символ имел непустое значение, он будет стёрт, и будет совершён переход на следующий символ
+    // Иначе будет совершён переход на следующий символ, и он будет стёрт
+    // Переход состоится, если символ не является нулевым
+    var completed = resetPoint(activePoint);
+    if (offset != 0) {
+        activatePoint(points[offset - 1]);
+        if (!completed)
+            resetPoint(points[offset - 1]);
+    }
+}
+
+function handleAddition(key, offset) {
+    activePoint.innerText = key;
+    activePoint.classList.add("filled");
+    if (offset != points.length - 1)
+        activatePoint(points[offset + 1]);
+}
+
 /**
  * Обрабатывает нажатие клавиши на физической клавиатуре (десктопы)
  * @param {KeyboardEvent} event 
@@ -64,17 +89,7 @@ function handlePhysicalKey(event) {
     var offset = +activePoint.dataset.offset;
     if (activePoint == undefined) return;
     // Стёрка
-    if (event.code == "Backspace")
-    {
-        // Если символ имел непустое значение, он будет стёрт, и будет совершён переход на следующий символ
-        // Иначе будет совершён переход на следующий символ, и он будет стёрт
-        // Переход состоится, если символ не является нулевым
-        var completed = resetPoint(activePoint);
-        if (offset != 0) {
-            activatePoint(points[offset - 1]);
-            if (!completed) resetPoint(points[offset - 1]);
-        } 
-    }
+    if (event.code == "Backspace") handleBackspace(offset);
     // Переход по стрелкам
     else if (event.code.startsWith("Arrow")) {
         const shift = arrows[event.code];
@@ -92,58 +107,65 @@ function handlePhysicalKey(event) {
         if (offset + LINE_WIDTH < points.length) activatePoint(points[offset - offset % LINE_WIDTH + LINE_WIDTH]);
     } 
     // Добавление символа
-    else {
-        activePoint.innerText = event.key;
-        activePoint.classList.add("filled");
-        if (offset != points.length - 1) activatePoint(points[offset + 1]);
-    }
+    else handleAddition(event.key, offset);
+    
 } 
 
 class MobileAdapter {
 
-    static mbdebug = document.getElementById("mbdebug");
+    static WILDCARD = '§';
+
+    /**
+     * Активирует клавиатуру при клике на символ для предложения ввода
+     * @param {PointerEvent} event 
+     */
+    static startAwaitingInput(event) {
+        // /**
+        //  * @type {HTMLInputElement}
+        //  */
+        // var keygrabber = points[LINE_COUNT * LINE_WIDTH];
+        // keygrabber.value = MobileAdapter.WILDCARD;
+        // keygrabber.setSelectionRange(-1, -1);
+        activatePoint(event.target);
+        points[points.length - 1].focus();
+    }
 
     /**
      * 
-     * @param {number} offset 
+     * @param {InputEvent} event 
      */
-    static setCaret(offset) {
-        var range = document.createRange();
-        var sel = window.getSelection();
-        
-        range.setStart(points[offset], 0);
-        range.collapse(true);
-        
-        sel.removeAllRanges();
-        sel.addRange(range);
-    }
-
-    static i = 0;
-
-    /**
-    * Обрабатывает нажатие клавиши на виртуальной клавиатуре (мобильные устройства)
-    * 
-    * Необходимо событие onkeypress
-    * @param {KeyboardEvent} event
-    */
     static handleVirtualKey(event) {
-        //alert(event.);
-        // TODO: forget about getting key, provide caret shifting
-        // ++MobileAdapter.i;
-        // console.log(MobileAdapter.i);
-        // mbdebug.innerText = MobileAdapter.i;
-        console.log(event);
-       // event.preventDefault();
+        /**
+         * @type {HTMLInputElement}
+         */
+        var keygrabber = points[LINE_COUNT * LINE_WIDTH];
+        var offset = +activePoint.dataset.offset;
+        if (event.inputType == 'insertText') handleAddition(event.data, offset);
+        else {
+            handleBackspace(offset);
+            if (keygrabber.value.length == 0) {
+                keygrabber.value = MobileAdapter.WILDCARD;
+                setTimeout(() => keygrabber.setSelectionRange(-1, -1),0);
+            } 
+        } 
     }
+    
 }
 
 
-
-dataField.addEventListener("click", event => activatePoint(event.target), false);
-
-if ('ontouchstart' in document.documentElement) {
-    dataField.contentEditable = true;
-    dataField.addEventListener("input", MobileAdapter.handleVirtualKey);
-} else dataField.addEventListener("keydown", handlePhysicalKey);
-
 createDataField();
+if ('ontouchstart' in document.documentElement) {
+    var keygrabber = document.createElement("input");
+   // keyGrabber.classList.add("keygrabber");
+    keygrabber.value = MobileAdapter.WILDCARD;
+    //keygrabber.setSelectionRange(-1, -1);
+    keygrabber.addEventListener("input", MobileAdapter.handleVirtualKey); 
+    dataField.appendChild(keygrabber);
+    dataField.addEventListener("click", MobileAdapter.startAwaitingInput, false);
+   // dataField.addEventListener("blur", keygrabber.blur);
+} else {
+    dataField.addEventListener("click", event => activatePoint(event.target), false);
+    dataField.addEventListener("keydown", handlePhysicalKey);
+}
+//dataField.addEventListener("blur", deactivateField);
+
