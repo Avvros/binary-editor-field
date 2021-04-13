@@ -162,7 +162,7 @@ class MobileAdapter {
         var offset = +activePoint.dataset.offset;
         if (event.inputType == "insertText") handleAddition(event.data, offset);
         else if (event.isComposing) {
-            console.log("Abort composition");
+            //console.log("Abort composition");
             MobileAdapter.resetKeygrabber(keygrabber);
             handleAddition(event.data, offset);
         }
@@ -180,22 +180,14 @@ class MobileAdapter {
 createDataField();
 if ('ontouchstart' in document.documentElement) {
     var keygrabber = document.createElement("input");
-   // keyGrabber.classList.add("keygrabber");
+    keygrabber.classList.add("keygrabber");
     keygrabber.value = MobileAdapter.WILDCARD;
     if ('autocapitalize' in keygrabber) {
         keygrabber.autocapitalize = "off";
     }
-    //keygrabber.setSelectionRange(-1, -1);
-    keygrabber.addEventListener("input", MobileAdapter.handleVirtualKey); 
+    keygrabber.addEventListener("input", MobileAdapter.handleVirtualKey);
     dataField.appendChild(keygrabber);
     dataField.addEventListener("click", MobileAdapter.startAwaitingInput, false);
-    // dataField.addEventListener("compositionstart", MobileAdapter.disableComposition, true);
-    // dataField.addEventListener("compositionupdate", MobileAdapter.disableComposition, true);
-    // dataField.addEventListener("compositionend", MobileAdapter.disableComposition, true);
-    // keygrabber.addEventListener("compositionstart", (event) => {
-    //     setTimeout(() => keygrabber.setSelectionRange(-1, -1),0);
-    // });
-   // dataField.addEventListener("blur", keygrabber.blur);
 } else {
     dataField.addEventListener("click", event => activatePoint(event.target), false);
     dataField.addEventListener("keydown", handlePhysicalKey);
