@@ -1,10 +1,11 @@
+(function() {
 var dataField = document.getElementById("data");
 /**
  * @type {HTMLElement}
  */
 var activePoint;
 
-var points = dataField.childNodes;
+var points = dataField.children;
 
 const LINE_WIDTH = 16;
 var LINE_COUNT = 13;
@@ -50,14 +51,6 @@ function resetPoint(point) {
         return true;
     }
     return false;
-}
-
-const specialKeys = ["Shift", "Control", "Alt", "Unidentified", "Escape", "ScrollLock", "Pause", "Insert", "NumLock"];
-const arrows = {
-    "ArrowLeft" : -1,
-    "ArrowRight" : 1,
-    "ArrowUp" : -LINE_WIDTH,
-    "ArrowDown" : LINE_WIDTH
 }
 
 function handleBackspace(offset) {
@@ -132,16 +125,6 @@ class MobileAdapter {
 
     /**
      * 
-     * @param {CompositionEvent} event 
-     */
-    static disableComposition(event) {
-        console.log(event.type + " called on " + event.target);
-        event.preventDefault();
-        //event.stopPropagation();
-    }
-
-    /**
-     * 
      * @param {HTMLInputElement} keygrabber 
      */
     static resetKeygrabber(keygrabber) {
@@ -157,7 +140,7 @@ class MobileAdapter {
         /**
          * @type {HTMLInputElement}
          */
-        if (event.isComposing) event.cac
+        //if (event.isComposing) event.cac
         var keygrabber = points[LINE_COUNT * LINE_WIDTH];
         var offset = +activePoint.dataset.offset;
         if (event.inputType == "insertText") handleAddition(event.data, offset);
@@ -178,19 +161,23 @@ class MobileAdapter {
 
 
 createDataField();
+
+
 if ('ontouchstart' in document.documentElement) {
     var keygrabber = document.createElement("input");
     keygrabber.classList.add("keygrabber");
     keygrabber.value = MobileAdapter.WILDCARD;
-    if ('autocapitalize' in keygrabber) {
-        keygrabber.autocapitalize = "off";
-    }
+    keygrabber.autocapitalize = "off";
     keygrabber.addEventListener("input", MobileAdapter.handleVirtualKey);
     dataField.appendChild(keygrabber);
     dataField.addEventListener("click", MobileAdapter.startAwaitingInput, false);
+    dataField.addEventListener("blur", (event) => {
+        if (event.relatedTarget != keygrabber) deactivateField();
+    });
 } else {
     dataField.addEventListener("click", event => activatePoint(event.target), false);
     dataField.addEventListener("keydown", handlePhysicalKey);
+    dataField.addEventListener("blur", deactivateField);
 }
-//dataField.addEventListener("blur", deactivateField);
 
+})();

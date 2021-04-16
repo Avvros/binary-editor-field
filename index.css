@@ -1,13 +1,13 @@
-#data {
+.tabledata {
     display: inline-block;
     font-size: 0;
 }
 
-#data:focus {
+.tabledata:focus {
     outline: none;
 }
 
-span {
+.tabledata span {
     display: inline;
     white-space: pre;
     font-family: "Courier New", Consolas, "PT Mono", "Liberation Mono", monospace;
@@ -18,21 +18,21 @@ span {
 }
 
 @media (hover: hover) and (pointer: fine) {
-    span:hover {
+    .tabledata span:hover {
         background-color: aquamarine;
     }
 }
 
 
-span:nth-child(16n)::after {
+.tabledata span:nth-child(16n)::after {
     content: "\A";
 }
 
-span.active {
+.tabledata span.active {
     background-color: aqua;
 }
 
-span.filled {
+.tabledata span.filled {
     color: inherit;
 }
 

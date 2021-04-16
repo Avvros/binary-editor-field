@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="index.css">
+    <script src="symboltable.js"></script>
 </head>
 <body>
-    <div id="data" spellcheck="false" tabindex="-1"></div>
-    <script src="index.js"></script>
+    <div id="text"></div>
+    <script>
+        let text = new SymbolTable(document.getElementById("text"), 16, 16);
+    </script> 
 </body>
 </html>
